@@ -107,7 +107,18 @@ export default function TabLayout() {
 					),
 				}}
 			/>
-			{/* Reordered: Profile comes 4th, as per the image (Smiley) */}
+			<Tabs.Screen
+				name="stores"
+				options={{
+					tabBarIcon: ({ focused }) => (
+						<TabIcon
+							focused={focused}
+							iconName={focused ? "storefront" : "storefront-outline"}
+							label="Stores"
+						/>
+					),
+				}}
+			/>
 			<Tabs.Screen
 				name="profile"
 				options={{
@@ -116,19 +127,6 @@ export default function TabLayout() {
 							focused={focused}
 							iconName={focused ? "emoticon-happy" : "emoticon-happy-outline"}
 							label="Profile"
-						/>
-					),
-				}}
-			/>
-			{/* Reordered: Favorites (Promo) comes 5th, as per the image (Percent) */}
-			<Tabs.Screen
-				name="favorites"
-				options={{
-					tabBarIcon: ({ focused }) => (
-						<TabIcon
-							focused={focused}
-							iconName={focused ? "percent-box" : "percent-box-outline"}
-							label="Promo"
 						/>
 					),
 				}}

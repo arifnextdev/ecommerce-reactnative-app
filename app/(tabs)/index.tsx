@@ -123,11 +123,6 @@ const PROMOS = [
 
 const CATALOGS = [
 	{
-		id: "1",
-		image: "https://images.unsplash.com/photo-15422191c0-639d10ef7c20?w=400",
-		name: "Nike Collection",
-	},
-	{
 		id: "2",
 		image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400",
 		name: "Adidas Runner",
@@ -146,31 +141,6 @@ const CATALOGS = [
 		id: "5",
 		image: "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=400",
 		name: "Sport Pro",
-	},
-	{
-		id: "6",
-		image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400",
-		name: "Fashion Walk",
-	},
-	{
-		id: "7",
-		image: "https://images.unsplash.com/photo-1512374382149-4332c6c02151?w=400",
-		name: "Casual Comfort",
-	},
-	{
-		id: "8",
-		image: "https://images.unsplash.com/photo-1539185441755-769473a23a50?w=400",
-		name: "Hiking Boots",
-	},
-	{
-		id: "9",
-		image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400",
-		name: "Midnight Edition",
-	},
-	{
-		id: "10",
-		image: "https://images.unsplash.com/photo-1520639889313-72d803bb11cd?w=400",
-		name: "Limited Release",
 	},
 ];
 
@@ -508,6 +478,8 @@ const styles = StyleSheet.create({
 		borderRadius: 25,
 		overflow: "hidden",
 		marginBottom: 20,
+		borderWidth: 2,
+		borderColor: "#88e04dff",
 	},
 	catalogImage: {
 		width: "100%",
