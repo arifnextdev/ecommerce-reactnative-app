@@ -10,6 +10,7 @@ import {
 	NativeScrollEvent,
 	NativeSyntheticEvent,
 	Pressable,
+	RefreshControl,
 	ScrollView,
 	StyleSheet,
 	Text,
@@ -276,7 +277,48 @@ export default function HomeScreen() {
 	const [mainSearchQuery, setMainSearchQuery] = useState("");
 	const [apiResults, setApiResults] = useState<any[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
+	const [favorites, setFavorites] = useState<string[]>([]);
+	const [refreshing, setRefreshing] = useState(false);
+	const [timeLeft, setTimeLeft] = useState({ h: "02", m: "12", s: "45" });
 	const flatListRef = useRef<FlatList>(null);
+
+	// Real-time Countdown Timer
+	useEffect(() => {
+		const timer = setInterval(() => {
+			const now = new Date();
+			// Mocking a countdown that ends at the end of the day
+			const endOfDay = new Date();
+			endOfDay.setHours(23, 59, 59);
+			const diff = endOfDay.getTime() - now.getTime();
+
+			const h = Math.floor(diff / (1000 * 60 * 60));
+			const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+			const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+			setTimeLeft({
+				h: h.toString().padStart(2, "0"),
+				m: m.toString().padStart(2, "0"),
+				s: s.toString().padStart(2, "0"),
+			});
+		}, 1000);
+		return () => clearInterval(timer);
+	}, []);
+
+	const onRefresh = () => {
+		setRefreshing(true);
+		setTimeout(() => setRefreshing(false), 2000);
+	};
+
+	const toggleFavorite = (id: string) => {
+		setFavorites((prev) =>
+			prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
+		);
+	};
+
+	const handleAddToCart = (productName: string) => {
+		// Mock toast notification
+		alert(`${productName} added to cart! 🛒`);
+	};
 
 	// Debounced API Search
 	useEffect(() => {
@@ -395,6 +437,13 @@ export default function HomeScreen() {
 			style={styles.container}
 			contentContainerStyle={styles.scrollContent}
 			showsVerticalScrollIndicator={false}
+			refreshControl={
+				<RefreshControl
+					refreshing={refreshing}
+					onRefresh={onRefresh}
+					colors={[COLORS.primaryDark]}
+				/>
+			}
 		>
 			{/* Header */}
 			<View style={styles.header}>
@@ -474,11 +523,18 @@ export default function HomeScreen() {
 						<View style={styles.catalogsGrid}>
 							{filteredProducts.map((item) => (
 								<TouchableOpacity key={item.id} style={styles.productCard}>
-									<TouchableOpacity style={styles.favoriteBtn}>
+									<TouchableOpacity
+										style={styles.favoriteBtn}
+										onPress={() => toggleFavorite(item.id)}
+									>
 										<Ionicons
-											name="heart-outline"
+											name={
+												favorites.includes(item.id) ? "heart" : "heart-outline"
+											}
 											size={18}
-											color={COLORS.text}
+											color={
+												favorites.includes(item.id) ? "#FF3B30" : COLORS.text
+											}
 										/>
 									</TouchableOpacity>
 									<Image
@@ -500,7 +556,10 @@ export default function HomeScreen() {
 											</Text>
 										</View>
 
-										<TouchableOpacity style={styles.addButton}>
+										<TouchableOpacity
+											style={styles.addButton}
+											onPress={() => handleAddToCart(item.name)}
+										>
 											<Text style={styles.addButtonText}>Add to Cart</Text>
 										</TouchableOpacity>
 									</View>
@@ -627,7 +686,7 @@ export default function HomeScreen() {
 									</View>
 									<View style={styles.countDownContainer}>
 										<View style={styles.timerBox}>
-											<Text style={styles.timerText}>02</Text>
+											<Text style={styles.timerText}>{timeLeft.h}</Text>
 										</View>
 										<Text
 											style={{ fontWeight: "bold", color: COLORS.secondary }}
@@ -635,7 +694,7 @@ export default function HomeScreen() {
 											:
 										</Text>
 										<View style={styles.timerBox}>
-											<Text style={styles.timerText}>12</Text>
+											<Text style={styles.timerText}>{timeLeft.m}</Text>
 										</View>
 										<Text
 											style={{ fontWeight: "bold", color: COLORS.secondary }}
@@ -643,7 +702,7 @@ export default function HomeScreen() {
 											:
 										</Text>
 										<View style={styles.timerBox}>
-											<Text style={styles.timerText}>45</Text>
+											<Text style={styles.timerText}>{timeLeft.s}</Text>
 										</View>
 									</View>
 								</View>
@@ -778,11 +837,18 @@ export default function HomeScreen() {
 					<View style={styles.catalogsGrid}>
 						{filteredProducts.map((item: any) => (
 							<TouchableOpacity key={item.id} style={styles.productCard}>
-								<TouchableOpacity style={styles.favoriteBtn}>
+								<TouchableOpacity
+									style={styles.favoriteBtn}
+									onPress={() => toggleFavorite(item.id)}
+								>
 									<Ionicons
-										name="heart-outline"
+										name={
+											favorites.includes(item.id) ? "heart" : "heart-outline"
+										}
 										size={18}
-										color={COLORS.text}
+										color={
+											favorites.includes(item.id) ? "#FF3B30" : COLORS.text
+										}
 									/>
 								</TouchableOpacity>
 								<Image
@@ -804,7 +870,10 @@ export default function HomeScreen() {
 										</Text>
 									</View>
 
-									<TouchableOpacity style={styles.addButton}>
+									<TouchableOpacity
+										style={styles.addButton}
+										onPress={() => handleAddToCart(item.name)}
+									>
 										<Text style={styles.addButtonText}>Add to Cart</Text>
 									</TouchableOpacity>
 								</View>
