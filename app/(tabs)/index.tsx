@@ -1,5 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
+import { useCart } from "../../context/CartContext";
 
 import {
 	ActivityIndicator,
@@ -281,6 +282,7 @@ export default function HomeScreen() {
 	const [refreshing, setRefreshing] = useState(false);
 	const [timeLeft, setTimeLeft] = useState({ h: "02", m: "12", s: "45" });
 	const flatListRef = useRef<FlatList>(null);
+	const { addToCart } = useCart();
 
 	// Real-time Countdown Timer
 	useEffect(() => {
@@ -315,9 +317,20 @@ export default function HomeScreen() {
 		);
 	};
 
-	const handleAddToCart = (productName: string) => {
-		// Mock toast notification
-		alert(`${productName} added to cart! 🛒`);
+	const handleAddToCart = (product: any) => {
+		// Convert string price like "$150.00" to number 150.00
+		const numericPrice = parseFloat(product.price.replace("$", ""));
+		addToCart({
+			id: product.id,
+			name: product.name,
+			price: numericPrice,
+			image: product.image,
+			brand: product.category, // Using category as brand for now
+			quantity: 1,
+			size: "42", // Default size
+			color: "Default",
+		});
+		alert(`${product.name} added to cart! 🛒`);
 	};
 
 	// Debounced API Search
@@ -558,7 +571,7 @@ export default function HomeScreen() {
 
 										<TouchableOpacity
 											style={styles.addButton}
-											onPress={() => handleAddToCart(item.name)}
+											onPress={() => handleAddToCart(item)}
 										>
 											<Text style={styles.addButtonText}>Add to Cart</Text>
 										</TouchableOpacity>
@@ -711,6 +724,7 @@ export default function HomeScreen() {
 									{FLASH_SALE.map((item) => (
 										<TouchableOpacity
 											key={item.id}
+											onPress={() => handleAddToCart(item)}
 											style={{
 												marginRight: 15,
 												width: 140,
@@ -872,7 +886,7 @@ export default function HomeScreen() {
 
 									<TouchableOpacity
 										style={styles.addButton}
-										onPress={() => handleAddToCart(item.name)}
+										onPress={() => handleAddToCart(item)}
 									>
 										<Text style={styles.addButtonText}>Add to Cart</Text>
 									</TouchableOpacity>
