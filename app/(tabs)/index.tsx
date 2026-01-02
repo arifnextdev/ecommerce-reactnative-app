@@ -207,7 +207,44 @@ export default function HomeScreen() {
 	const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
 	const [isDetecting, setIsDetecting] = useState(false);
 	const [locationSearchQuery, setLocationSearchQuery] = useState("");
+	const [apiResults, setApiResults] = useState<any[]>([]);
+	const [isSearching, setIsSearching] = useState(false);
 	const flatListRef = useRef<FlatList>(null);
+
+	// Debounced API Search
+	useEffect(() => {
+		const delayDebounceFn = setTimeout(() => {
+			if (locationSearchQuery.length > 2) {
+				searchLocations(locationSearchQuery);
+			} else {
+				setApiResults([]);
+			}
+		}, 500);
+
+		return () => clearTimeout(delayDebounceFn);
+	}, [locationSearchQuery]);
+
+	const searchLocations = async (query: string) => {
+		setIsSearching(true);
+		try {
+			const response = await fetch(
+				`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+					query
+				)}&addressdetails=1&limit=8`,
+				{
+					headers: {
+						"User-Agent": "EcommerceApp/1.0",
+					},
+				}
+			);
+			const data = await response.json();
+			setApiResults(data);
+		} catch (error) {
+			console.error("Location search failed:", error);
+		} finally {
+			setIsSearching(false);
+		}
+	};
 
 	const POPULAR_CITIES = [
 		"London, UK",
@@ -215,8 +252,7 @@ export default function HomeScreen() {
 		"Tokyo, Japan",
 		"Paris, France",
 		"Dubai, UAE",
-		"Singapore",
-		"Berlin, Germany",
+		"Dhaka, Bangladesh",
 	];
 
 	const handleDetectLocation = () => {
@@ -227,12 +263,9 @@ export default function HomeScreen() {
 			setIsDetecting(false);
 			setIsLocationModalVisible(false);
 			setLocationSearchQuery("");
+			setApiResults([]);
 		}, 1500);
 	};
-
-	const filteredCities = POPULAR_CITIES.filter((city) =>
-		city.toLowerCase().includes(locationSearchQuery.toLowerCase())
-	);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -616,43 +649,96 @@ export default function HomeScreen() {
 							style={styles.citiesList}
 							showsVerticalScrollIndicator={false}
 						>
-							{filteredCities.map((city) => (
-								<TouchableOpacity
-									key={city}
-									style={styles.cityItem}
-									onPress={() => {
-										setLocation(city);
-										setIsLocationModalVisible(false);
-										setLocationSearchQuery("");
-									}}
-								>
-									<Ionicons
-										name="location-outline"
-										size={20}
-										color={COLORS.textSecondary}
-									/>
-									<Text
-										style={[
-											styles.cityText,
-											location === city && styles.cityTextActive,
-										]}
-									>
-										{city}
-									</Text>
-									{location === city && (
-										<Ionicons
-											name="checkmark-circle"
-											size={20}
-											color={COLORS.primaryDark}
-										/>
-									)}
-								</TouchableOpacity>
-							))}
-							{filteredCities.length === 0 && (
-								<View style={styles.noResultsContainer}>
-									<Text style={styles.noResultsText}>No cities found</Text>
-								</View>
+							{isSearching && (
+								<ActivityIndicator
+									color={COLORS.primaryDark}
+									style={{ marginVertical: 20 }}
+								/>
 							)}
+
+							{/* API Results */}
+							{locationSearchQuery.length > 2 &&
+								apiResults.map((item) => (
+									<TouchableOpacity
+										key={item.place_id}
+										style={styles.cityItem}
+										onPress={() => {
+											setLocation(item.display_name.split(",")[0]);
+											setIsLocationModalVisible(false);
+											setLocationSearchQuery("");
+											setApiResults([]);
+										}}
+									>
+										<Ionicons
+											name="location-outline"
+											size={20}
+											color={COLORS.textSecondary}
+										/>
+										<View style={{ flex: 1 }}>
+											<Text numberOfLines={1} style={styles.cityText}>
+												{item.display_name.split(",")[0]}
+											</Text>
+											<Text
+												numberOfLines={1}
+												style={styles.customLocationSubtext}
+											>
+												{item.display_name.split(",").slice(1).join(",").trim()}
+											</Text>
+										</View>
+									</TouchableOpacity>
+								))}
+
+							{/* Popular Cities (shown when not searching) */}
+							{locationSearchQuery.length <= 2 &&
+								POPULAR_CITIES.map((city) => (
+									<TouchableOpacity
+										key={city}
+										style={styles.cityItem}
+										onPress={() => {
+											setLocation(city);
+											setIsLocationModalVisible(false);
+											setLocationSearchQuery("");
+										}}
+									>
+										<Ionicons
+											name="location-outline"
+											size={20}
+											color={COLORS.textSecondary}
+										/>
+										<Text
+											style={[
+												styles.cityText,
+												location === city && styles.cityTextActive,
+											]}
+										>
+											{city}
+										</Text>
+										{location === city && (
+											<Ionicons
+												name="checkmark-circle"
+												size={20}
+												color={COLORS.primaryDark}
+											/>
+										)}
+									</TouchableOpacity>
+								))}
+
+							{locationSearchQuery.length > 2 &&
+								!isSearching &&
+								apiResults.length === 0 && (
+									<View style={styles.noResultsContainer}>
+										<Text style={styles.noResultsText}>No results found</Text>
+									</View>
+								)}
+
+							{locationSearchQuery.length <= 2 &&
+								locationSearchQuery.length > 0 && (
+									<View style={styles.noResultsContainer}>
+										<Text style={styles.noResultsText}>
+											Type at least 3 characters...
+										</Text>
+									</View>
+								)}
 						</ScrollView>
 					</View>
 				</Pressable>
@@ -1097,6 +1183,17 @@ const styles = StyleSheet.create({
 	cityTextActive: {
 		fontWeight: "bold",
 		color: COLORS.primaryDark,
+	},
+	customLocationItem: {
+		borderBottomColor: COLORS.primary,
+		backgroundColor: COLORS.flashSaleBg,
+		borderRadius: 12,
+		paddingHorizontal: 10,
+		marginTop: 10,
+	},
+	customLocationSubtext: {
+		fontSize: 12,
+		color: COLORS.textSecondary,
 	},
 	noResultsContainer: {
 		paddingVertical: 30,
