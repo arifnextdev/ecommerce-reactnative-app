@@ -1,4 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import {
 	Alert,
@@ -16,6 +17,11 @@ import {
 	UIManager,
 	View,
 } from "react-native";
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Reanimated, {
+	SharedValue,
+	useAnimatedStyle,
+} from "react-native-reanimated";
 import { CartItem, useCart } from "../../context/CartContext";
 
 // Enable LayoutAnimation for Android
@@ -101,71 +107,127 @@ export default function CartScreen() {
 	const shipping = items.length > 0 ? 15.0 : 0;
 	const total = subtotalVal - merchantDiscount + shipping;
 
+	const renderRightActions = (
+		prog: SharedValue<number>,
+		drag: SharedValue<number>,
+		item: CartItem
+	) => {
+		const animatedStyle = useAnimatedStyle(() => {
+			return {
+				transform: [{ translateX: drag.value + 80 }],
+			};
+		});
+
+		return (
+			<Reanimated.View style={[styles.rightAction, animatedStyle]}>
+				<TouchableOpacity
+					style={styles.actionButton}
+					onPress={() => {
+						Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+						handleRemoveItem(item.id);
+					}}
+				>
+					<Ionicons name="trash-outline" size={28} color={COLORS.white} />
+					<Text style={styles.actionText}>Delete</Text>
+				</TouchableOpacity>
+			</Reanimated.View>
+		);
+	};
+
+	const renderLeftActions = (
+		prog: SharedValue<number>,
+		drag: SharedValue<number>,
+		item: CartItem
+	) => {
+		const animatedStyle = useAnimatedStyle(() => {
+			return {
+				transform: [{ translateX: drag.value - 80 }],
+			};
+		});
+
+		return (
+			<Reanimated.View style={[styles.leftAction, animatedStyle]}>
+				<TouchableOpacity
+					style={styles.actionButton}
+					onPress={() => {
+						Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+						handleRemoveItem(item.id);
+					}}
+				>
+					<Ionicons name="trash-outline" size={28} color={COLORS.white} />
+					<Text style={styles.actionText}>Delete</Text>
+				</TouchableOpacity>
+			</Reanimated.View>
+		);
+	};
+
 	const renderCartItem = ({ item }: { item: CartItem }) => (
-		<View style={styles.cartCard}>
-			<View style={styles.cardIndicator} />
-			<Image source={{ uri: item.image }} style={styles.itemImage} />
-			<View style={styles.itemInfo}>
-				<View style={styles.itemHeader}>
-					<View style={{ flex: 1 }}>
-						<Text style={styles.itemName} numberOfLines={1}>
-							{item.name}
-						</Text>
-						<Text style={styles.itemBrand}>{item.brand}</Text>
+		<ReanimatedSwipeable
+			renderRightActions={(prog, drag) => renderRightActions(prog, drag, item)}
+			renderLeftActions={(prog, drag) => renderLeftActions(prog, drag, item)}
+			friction={2}
+			rightThreshold={40}
+			leftThreshold={40}
+		>
+			<View style={styles.cartCard}>
+				<View style={styles.cardIndicator} />
+				<Image source={{ uri: item.image }} style={styles.itemImage} />
+				<View style={styles.itemInfo}>
+					<View style={styles.itemHeader}>
+						<View style={{ flex: 1 }}>
+							<Text style={styles.itemName} numberOfLines={1}>
+								{item.name}
+							</Text>
+							<Text style={styles.itemBrand}>{item.brand}</Text>
+						</View>
 					</View>
-					<TouchableOpacity
-						style={styles.deleteBtn}
-						onPress={() => handleRemoveItem(item.id)}
-					>
-						<Ionicons name="close-circle" size={24} color={COLORS.textMuted} />
-					</TouchableOpacity>
-				</View>
 
-				<View style={styles.itemDetails}>
-					{item.size && (
-						<View style={styles.tag}>
-							<Text style={styles.tagText}>US {item.size}</Text>
-						</View>
-					)}
-					{item.color && (
-						<View style={styles.tag}>
-							<View
-								style={[
-									styles.colorDot,
-									{
-										backgroundColor: item.color.includes("Orange")
-											? "#FF8C00"
-											: item.color.includes("White")
-											? "#EEE"
-											: "#333",
-									},
-								]}
-							/>
-							<Text style={styles.tagText}>{item.color}</Text>
-						</View>
-					)}
-				</View>
+					<View style={styles.itemDetails}>
+						{item.size && (
+							<View style={styles.tag}>
+								<Text style={styles.tagText}>US {item.size}</Text>
+							</View>
+						)}
+						{item.color && (
+							<View style={styles.tag}>
+								<View
+									style={[
+										styles.colorDot,
+										{
+											backgroundColor: item.color.includes("Orange")
+												? "#FF8C00"
+												: item.color.includes("White")
+												? "#EEE"
+												: "#333",
+										},
+									]}
+								/>
+								<Text style={styles.tagText}>{item.color}</Text>
+							</View>
+						)}
+					</View>
 
-				<View style={styles.itemFooter}>
-					<Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
-					<View style={styles.quantityController}>
-						<TouchableOpacity
-							style={styles.controlBtn}
-							onPress={() => handleUpdateQuantity(item.id, -1)}
-						>
-							<Ionicons name="remove" size={16} color={COLORS.secondary} />
-						</TouchableOpacity>
-						<Text style={styles.quantityValue}>{item.quantity}</Text>
-						<TouchableOpacity
-							style={styles.controlBtn}
-							onPress={() => handleUpdateQuantity(item.id, 1)}
-						>
-							<Ionicons name="add" size={16} color={COLORS.secondary} />
-						</TouchableOpacity>
+					<View style={styles.itemFooter}>
+						<Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+						<View style={styles.quantityController}>
+							<TouchableOpacity
+								style={styles.controlBtn}
+								onPress={() => handleUpdateQuantity(item.id, -1)}
+							>
+								<Ionicons name="remove" size={16} color={COLORS.secondary} />
+							</TouchableOpacity>
+							<Text style={styles.quantityValue}>{item.quantity}</Text>
+							<TouchableOpacity
+								style={styles.controlBtn}
+								onPress={() => handleUpdateQuantity(item.id, 1)}
+							>
+								<Ionicons name="add" size={16} color={COLORS.secondary} />
+							</TouchableOpacity>
+						</View>
 					</View>
 				</View>
 			</View>
-		</View>
+		</ReanimatedSwipeable>
 	);
 
 	return (
@@ -636,5 +698,33 @@ const styles = StyleSheet.create({
 		color: COLORS.white,
 		fontWeight: "bold",
 		fontSize: 16,
+	},
+	rightAction: {
+		backgroundColor: COLORS.accent,
+		justifyContent: "center",
+		alignItems: "flex-end",
+		borderRadius: 24,
+		marginBottom: 20,
+		width: 80,
+	},
+	leftAction: {
+		backgroundColor: COLORS.accent,
+		justifyContent: "center",
+		alignItems: "flex-start",
+		borderRadius: 24,
+		marginBottom: 20,
+		width: 80,
+	},
+	actionButton: {
+		width: 80,
+		height: "100%",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	actionText: {
+		color: COLORS.white,
+		fontSize: 12,
+		fontWeight: "600",
+		marginTop: 4,
 	},
 });
