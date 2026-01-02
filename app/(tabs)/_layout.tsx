@@ -152,16 +152,14 @@ const styles = StyleSheet.create({
 		shadowOffset: { width: 0, height: 10 },
 		shadowOpacity: 0.5,
 		shadowRadius: 20,
-		// Layout
-		flexDirection: "row",
-		justifyContent: "space-between", // Distribute Items evenly
 		alignItems: "center",
-		overflow: "hidden",
+		justifyContent: "center",
 	},
 	tabItem: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
+		marginTop: 35,
 		height: 50,
 		borderRadius: 15,
 		overflow: "hidden", // Prevent content from spilling during animation
