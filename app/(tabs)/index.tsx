@@ -163,6 +163,16 @@ const FLASH_SALE = [
 
 const PRODUCTS = [
 	{
+		id: "1",
+		image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
+		name: "Nike Air Max",
+		price: "$150.00",
+		originalPrice: "$180.00",
+		rating: 4.9,
+		reviews: 156,
+		category: "Running",
+	},
+	{
 		id: "2",
 		image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400",
 		name: "Adidas Runner",
@@ -170,6 +180,7 @@ const PRODUCTS = [
 		originalPrice: "$160.00",
 		rating: 4.8,
 		reviews: 124,
+		category: "Running",
 	},
 	{
 		id: "3",
@@ -179,6 +190,7 @@ const PRODUCTS = [
 		originalPrice: "$100.00",
 		rating: 4.5,
 		reviews: 89,
+		category: "Sneakers",
 	},
 	{
 		id: "4",
@@ -188,6 +200,7 @@ const PRODUCTS = [
 		originalPrice: "$110.00",
 		rating: 4.6,
 		reviews: 56,
+		category: "Casual",
 	},
 	{
 		id: "5",
@@ -197,6 +210,57 @@ const PRODUCTS = [
 		originalPrice: "$180.00",
 		rating: 4.9,
 		reviews: 210,
+		category: "Running",
+	},
+	{
+		id: "6",
+		image: "https://images.unsplash.com/photo-1531310197839-ccf54634509e?w=400",
+		name: "Formal Oxford",
+		price: "$110.00",
+		originalPrice: "$130.00",
+		rating: 4.7,
+		reviews: 42,
+		category: "Formal",
+	},
+	{
+		id: "7",
+		image: "https://images.unsplash.com/photo-1520639889313-7272a74b1c73?w=400",
+		name: "Trail Master",
+		price: "$130.00",
+		originalPrice: "$150.00",
+		rating: 4.8,
+		reviews: 67,
+		category: "Hiking",
+	},
+	{
+		id: "8",
+		image: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=400",
+		name: "Lite Joggers",
+		price: "$75.00",
+		originalPrice: "$95.00",
+		rating: 4.4,
+		reviews: 210,
+		category: "Running",
+	},
+	{
+		id: "9",
+		image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400",
+		name: "Suede Loafers",
+		price: "$90.00",
+		originalPrice: "$115.00",
+		rating: 4.6,
+		reviews: 34,
+		category: "Formal",
+	},
+	{
+		id: "10",
+		image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400",
+		name: "High-top Pro",
+		price: "$115.00",
+		originalPrice: "$140.00",
+		rating: 4.7,
+		reviews: 156,
+		category: "Sneakers",
 	},
 ];
 
@@ -205,8 +269,11 @@ export default function HomeScreen() {
 	const [activeFilter, setActiveFilter] = useState("All");
 	const [location, setLocation] = useState("Paris, France");
 	const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+	const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+	const [isNotificationsVisible, setIsNotificationsVisible] = useState(false);
 	const [isDetecting, setIsDetecting] = useState(false);
 	const [locationSearchQuery, setLocationSearchQuery] = useState("");
+	const [mainSearchQuery, setMainSearchQuery] = useState("");
 	const [apiResults, setApiResults] = useState<any[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const flatListRef = useRef<FlatList>(null);
@@ -246,6 +313,15 @@ export default function HomeScreen() {
 		}
 	};
 
+	const filteredProducts = PRODUCTS.filter((product) => {
+		const matchesSearch = product.name
+			.toLowerCase()
+			.includes(mainSearchQuery.toLowerCase());
+		const matchesFilter =
+			activeFilter === "All" || product.category === activeFilter;
+		return matchesSearch && matchesFilter;
+	});
+
 	const POPULAR_CITIES = [
 		"London, UK",
 		"New York, USA",
@@ -253,6 +329,40 @@ export default function HomeScreen() {
 		"Paris, France",
 		"Dubai, UAE",
 		"Dhaka, Bangladesh",
+	];
+
+	const NOTIFICATIONS = [
+		{
+			id: "1",
+			title: "Flash Sale Alert! ⚡",
+			message: "Up to 70% off on your favorite sneakers. Limited time only!",
+			time: "2 mins ago",
+			type: "sale",
+		},
+		{
+			id: "2",
+			title: "Order Delivered 📦",
+			message: "Your order #4592 has been delivered. Rate your purchase!",
+			time: "1 hour ago",
+			type: "status",
+		},
+		{
+			id: "3",
+			title: "New Collection 🔥",
+			message: "Adidas x Yeezy collection is now available. Check it out!",
+			time: "5 hours ago",
+			type: "new",
+		},
+	];
+
+	const SIDEBAR_MENU = [
+		{ icon: "shopping-outline", label: "My Orders", route: "Orders" },
+		{ icon: "heart-outline", label: "Wishlist", route: "Wishlist" },
+		{ icon: "ticket-percent-outline", label: "Vouchers", route: "Vouchers" },
+		{ icon: "wallet-outline", label: "Payment Methods", route: "Wallet" },
+		{ icon: "shield-check-outline", label: "Privacy Policy", route: "Privacy" },
+		{ icon: "help-circle-outline", label: "Help Center", route: "Help" },
+		{ icon: "cog-outline", label: "Settings", route: "Settings" },
 	];
 
 	const handleDetectLocation = () => {
@@ -288,7 +398,10 @@ export default function HomeScreen() {
 		>
 			{/* Header */}
 			<View style={styles.header}>
-				<TouchableOpacity style={styles.menuIcon}>
+				<TouchableOpacity
+					style={styles.menuIcon}
+					onPress={() => setIsSidebarVisible(true)}
+				>
 					<MaterialCommunityIcons name="menu-open" size={24} color="#000" />
 				</TouchableOpacity>
 
@@ -305,7 +418,10 @@ export default function HomeScreen() {
 					/>
 				</TouchableOpacity>
 
-				<TouchableOpacity style={styles.notificationBtn}>
+				<TouchableOpacity
+					style={styles.notificationBtn}
+					onPress={() => setIsNotificationsVisible(true)}
+				>
 					<Ionicons
 						name="notifications-outline"
 						size={24}
@@ -320,263 +436,383 @@ export default function HomeScreen() {
 				<Ionicons
 					name="search-outline"
 					size={20}
-					color="#666"
+					color={COLORS.textSecondary}
 					style={styles.searchIcon}
 				/>
 				<TextInput
-					placeholder="Search details..."
+					placeholder="Search products..."
 					style={styles.searchInput}
-					placeholderTextColor="#666"
+					placeholderTextColor={COLORS.textMuted}
+					value={mainSearchQuery}
+					onChangeText={setMainSearchQuery}
 				/>
-				<TouchableOpacity>
-					<Ionicons
-						name="filter-outline"
-						size={20}
-						color={COLORS.textSecondary}
-					/>
-				</TouchableOpacity>
+				{mainSearchQuery.length > 0 ? (
+					<TouchableOpacity onPress={() => setMainSearchQuery("")}>
+						<Ionicons name="close-circle" size={20} color={COLORS.textMuted} />
+					</TouchableOpacity>
+				) : (
+					<TouchableOpacity>
+						<Ionicons
+							name="filter-outline"
+							size={20}
+							color={COLORS.textSecondary}
+						/>
+					</TouchableOpacity>
+				)}
 			</View>
 
-			{/* Filter Chips */}
-			<ScrollView
-				horizontal
-				showsHorizontalScrollIndicator={false}
-				style={styles.filtersContainer}
-			>
-				{FILTERS.map((filter, index) => (
-					<TouchableOpacity
-						key={index}
-						style={[
-							styles.filterChip,
-							activeFilter === filter && styles.filterChipActive,
-						]}
-						onPress={() => setActiveFilter(filter)}
-					>
-						<Text
-							style={[
-								styles.filterText,
-								activeFilter === filter && styles.filterTextActive,
-							]}
-						>
-							{filter}
+			{mainSearchQuery.length > 0 ? (
+				/* Search Results View */
+				<View style={{ flex: 1 }}>
+					<View style={styles.sectionHeader}>
+						<Text style={styles.sectionTitle}>
+							Search Results ({filteredProducts.length})
 						</Text>
-					</TouchableOpacity>
-				))}
-			</ScrollView>
+					</View>
 
-			{/* Promo Banner */}
-			<View style={styles.promoContainer}>
-				<FlatList
-					ref={flatListRef}
-					data={PROMOS}
-					horizontal
-					pagingEnabled
-					showsHorizontalScrollIndicator={false}
-					onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-						const offset = e.nativeEvent.contentOffset.x;
-						const index = Math.round(offset / (width - 40));
-						setActiveIndex(index);
-					}}
-					renderItem={({ item }) => (
-						<View
-							style={[
-								styles.promoBanner,
-								{ backgroundColor: item.backgroundColor },
-							]}
-						>
-							<View style={styles.promoContent}>
-								<Text style={styles.promoTitle}>{item.title}</Text>
-								<Text style={styles.promoSubtitle}>{item.subtitle}</Text>
-								<Text style={styles.promoDiscount}>
-									{item.discount}
-									<Text style={{ fontSize: 16 }}>% OFF</Text>
-								</Text>
-								<TouchableOpacity style={styles.discoverButton}>
-									<Text style={styles.discoverButtonText}>Shop Now</Text>
+					{filteredProducts.length > 0 ? (
+						<View style={styles.catalogsGrid}>
+							{filteredProducts.map((item) => (
+								<TouchableOpacity key={item.id} style={styles.productCard}>
+									<TouchableOpacity style={styles.favoriteBtn}>
+										<Ionicons
+											name="heart-outline"
+											size={18}
+											color={COLORS.text}
+										/>
+									</TouchableOpacity>
+									<Image
+										source={{ uri: item.image }}
+										style={styles.productImage}
+									/>
+
+									<View style={styles.productInfo}>
+										<Text style={styles.productName}>{item.name}</Text>
+										<View style={styles.ratingContainer}>
+											<Ionicons name="star" size={12} color={COLORS.rating} />
+											<Text style={styles.ratingText}>{item.rating}</Text>
+											<Text style={styles.reviewCount}>({item.reviews})</Text>
+										</View>
+										<View style={styles.priceContainer}>
+											<Text style={styles.price}>{item.price}</Text>
+											<Text style={styles.originalPrice}>
+												{item.originalPrice}
+											</Text>
+										</View>
+
+										<TouchableOpacity style={styles.addButton}>
+											<Text style={styles.addButtonText}>Add to Cart</Text>
+										</TouchableOpacity>
+									</View>
 								</TouchableOpacity>
-							</View>
-							<Image
-								source={item.image}
-								style={styles.promoImage}
-								resizeMode="contain"
+							))}
+						</View>
+					) : (
+						<View style={styles.noResultsContainer}>
+							<MaterialCommunityIcons
+								name="magnify-close"
+								size={60}
+								color={COLORS.textMuted}
 							/>
+							<Text style={[styles.noResultsText, { marginTop: 15 }]}>
+								No products found for "{mainSearchQuery}"
+							</Text>
 						</View>
 					)}
-					keyExtractor={(item) => item.id}
-				/>
-
-				{/* Pagination Dots */}
-				<View style={styles.pagination}>
-					{PROMOS.map((_, index) => (
-						<View
-							key={index}
-							style={[styles.dot, activeIndex === index && styles.dotActive]}
-						/>
-					))}
+					<View style={{ height: 100 }} />
 				</View>
-			</View>
-
-			{/* Flash Sale Section */}
-			<View style={styles.flashSaleContainer}>
-				<View style={styles.flashSaleHeader}>
-					<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-						<Ionicons name="flash" size={20} color={COLORS.secondary} />
-						<Text style={styles.flashSaleTitle}>Flash Sale</Text>
-					</View>
-					<View style={styles.countDownContainer}>
-						<View style={styles.timerBox}>
-							<Text style={styles.timerText}>02</Text>
-						</View>
-						<Text style={{ fontWeight: "bold", color: COLORS.secondary }}>
-							:
-						</Text>
-						<View style={styles.timerBox}>
-							<Text style={styles.timerText}>12</Text>
-						</View>
-						<Text style={{ fontWeight: "bold", color: COLORS.secondary }}>
-							:
-						</Text>
-						<View style={styles.timerBox}>
-							<Text style={styles.timerText}>45</Text>
-						</View>
-					</View>
-				</View>
-
-				<ScrollView horizontal showsHorizontalScrollIndicator={false}>
-					{FLASH_SALE.map((item) => (
-						<TouchableOpacity
-							key={item.id}
-							style={{
-								marginRight: 15,
-								width: 140,
-								backgroundColor: COLORS.white,
-								borderRadius: 15,
-								padding: 10,
-							}}
-						>
-							<View>
-								<Image
-									source={{ uri: item.image }}
-									style={{
-										width: "100%",
-										height: 100,
-										borderRadius: 10,
-										marginBottom: 8,
-										backgroundColor: COLORS.surface,
-									}}
-									resizeMode="contain"
-								/>
-								<View
-									style={{
-										position: "absolute",
-										top: 5,
-										left: 5,
-										backgroundColor: COLORS.primary,
-										paddingHorizontal: 6,
-										paddingVertical: 2,
-										borderRadius: 4,
-									}}
+			) : (
+				/* Default Home Content */
+				<View style={{ flex: 1 }}>
+					{/* Filter Chips */}
+					<ScrollView
+						horizontal
+						showsHorizontalScrollIndicator={false}
+						style={styles.filtersContainer}
+					>
+						{FILTERS.map((filter, index) => (
+							<TouchableOpacity
+								key={index}
+								style={[
+									styles.filterChip,
+									activeFilter === filter && styles.filterChipActive,
+								]}
+								onPress={() => setActiveFilter(filter)}
+							>
+								<Text
+									style={[
+										styles.filterText,
+										activeFilter === filter && styles.filterTextActive,
+									]}
 								>
-									<Text
-										style={{
-											color: COLORS.secondary,
-											fontSize: 10,
-											fontWeight: "bold",
-										}}
-									>
-										{item.discount}
-									</Text>
+									{filter}
+								</Text>
+							</TouchableOpacity>
+						))}
+					</ScrollView>
+
+					{activeFilter === "All" ? (
+						<>
+							{/* Promo Banner */}
+							<View style={styles.promoContainer}>
+								<FlatList
+									ref={flatListRef}
+									data={PROMOS}
+									horizontal
+									pagingEnabled
+									showsHorizontalScrollIndicator={false}
+									onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+										const offset = e.nativeEvent.contentOffset.x;
+										const index = Math.round(offset / (width - 40));
+										setActiveIndex(index);
+									}}
+									renderItem={({ item }) => (
+										<View
+											style={[
+												styles.promoBanner,
+												{ backgroundColor: item.backgroundColor },
+											]}
+										>
+											<View style={styles.promoContent}>
+												<Text style={styles.promoTitle}>{item.title}</Text>
+												<Text style={styles.promoSubtitle}>
+													{item.subtitle}
+												</Text>
+												<Text style={styles.promoDiscount}>
+													{item.discount}
+													<Text style={{ fontSize: 16 }}>% OFF</Text>
+												</Text>
+												<TouchableOpacity style={styles.discoverButton}>
+													<Text style={styles.discoverButtonText}>
+														Shop Now
+													</Text>
+												</TouchableOpacity>
+											</View>
+											<Image
+												source={item.image}
+												style={styles.promoImage}
+												resizeMode="contain"
+											/>
+										</View>
+									)}
+									keyExtractor={(item) => item.id}
+								/>
+
+								{/* Pagination Dots */}
+								<View style={styles.pagination}>
+									{PROMOS.map((_, index) => (
+										<View
+											key={index}
+											style={[
+												styles.dot,
+												activeIndex === index && styles.dotActive,
+											]}
+										/>
+									))}
 								</View>
 							</View>
-							<Text
-								numberOfLines={1}
-								style={{
-									fontWeight: "600",
-									marginBottom: 4,
-									color: COLORS.text,
-								}}
+
+							{/* Flash Sale Section */}
+							<View style={styles.flashSaleContainer}>
+								<View style={styles.flashSaleHeader}>
+									<View
+										style={{
+											flexDirection: "row",
+											alignItems: "center",
+											gap: 8,
+										}}
+									>
+										<Ionicons name="flash" size={20} color={COLORS.secondary} />
+										<Text style={styles.flashSaleTitle}>Flash Sale</Text>
+									</View>
+									<View style={styles.countDownContainer}>
+										<View style={styles.timerBox}>
+											<Text style={styles.timerText}>02</Text>
+										</View>
+										<Text
+											style={{ fontWeight: "bold", color: COLORS.secondary }}
+										>
+											:
+										</Text>
+										<View style={styles.timerBox}>
+											<Text style={styles.timerText}>12</Text>
+										</View>
+										<Text
+											style={{ fontWeight: "bold", color: COLORS.secondary }}
+										>
+											:
+										</Text>
+										<View style={styles.timerBox}>
+											<Text style={styles.timerText}>45</Text>
+										</View>
+									</View>
+								</View>
+
+								<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+									{FLASH_SALE.map((item) => (
+										<TouchableOpacity
+											key={item.id}
+											style={{
+												marginRight: 15,
+												width: 140,
+												backgroundColor: COLORS.white,
+												borderRadius: 15,
+												padding: 10,
+											}}
+										>
+											<View>
+												<Image
+													source={{ uri: item.image }}
+													style={{
+														width: "100%",
+														height: 100,
+														borderRadius: 10,
+														marginBottom: 8,
+														backgroundColor: COLORS.surface,
+													}}
+													resizeMode="contain"
+												/>
+												<View
+													style={{
+														position: "absolute",
+														top: 5,
+														left: 5,
+														backgroundColor: COLORS.primary,
+														paddingHorizontal: 6,
+														paddingVertical: 2,
+														borderRadius: 4,
+													}}
+												>
+													<Text
+														style={{
+															color: COLORS.secondary,
+															fontSize: 10,
+															fontWeight: "bold",
+														}}
+													>
+														{item.discount}
+													</Text>
+												</View>
+											</View>
+											<Text
+												numberOfLines={1}
+												style={{
+													fontWeight: "600",
+													marginBottom: 4,
+													color: COLORS.text,
+												}}
+											>
+												{item.name}
+											</Text>
+											<View
+												style={{
+													flexDirection: "row",
+													alignItems: "center",
+													gap: 6,
+												}}
+											>
+												<Text
+													style={{ fontWeight: "bold", color: COLORS.text }}
+												>
+													{item.price}
+												</Text>
+												<Text
+													style={{
+														fontSize: 10,
+														color: COLORS.textMuted,
+														textDecorationLine: "line-through",
+													}}
+												>
+													{item.originalPrice}
+												</Text>
+											</View>
+										</TouchableOpacity>
+									))}
+								</ScrollView>
+							</View>
+
+							{/* Favorite Stores */}
+							<View style={styles.sectionHeader}>
+								<Text style={styles.sectionTitle}>Your favorite stores</Text>
+								<TouchableOpacity>
+									<Text style={styles.seeAllText}>See all</Text>
+								</TouchableOpacity>
+							</View>
+
+							<ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								contentContainerStyle={styles.storesList}
 							>
-								{item.name}
+								{STORES.map((store) => (
+									<View key={store.id} style={styles.storeContainer}>
+										<View style={styles.storeIconWrapper}>
+											<Image
+												source={{ uri: store.logo }}
+												style={styles.storeIcon}
+											/>
+										</View>
+										<Text style={styles.storeName}>{store.name}</Text>
+									</View>
+								))}
+							</ScrollView>
+						</>
+					) : (
+						<View style={styles.sectionHeader}>
+							<Text style={styles.sectionTitle}>
+								{activeFilter} Collections ({filteredProducts.length})
 							</Text>
-							<View
-								style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-							>
-								<Text style={{ fontWeight: "bold", color: COLORS.text }}>
-									{item.price}
-								</Text>
-								<Text
-									style={{
-										fontSize: 10,
-										color: COLORS.textMuted,
-										textDecorationLine: "line-through",
-									}}
-								>
-									{item.originalPrice}
-								</Text>
-							</View>
-						</TouchableOpacity>
-					))}
-				</ScrollView>
-			</View>
-
-			{/* Favorite Stores */}
-			<View style={styles.sectionHeader}>
-				<Text style={styles.sectionTitle}>Your favorite stores</Text>
-				<TouchableOpacity>
-					<Text style={styles.seeAllText}>See all</Text>
-				</TouchableOpacity>
-			</View>
-
-			<ScrollView
-				horizontal
-				showsHorizontalScrollIndicator={false}
-				contentContainerStyle={styles.storesList}
-			>
-				{STORES.map((store) => (
-					<View key={store.id} style={styles.storeContainer}>
-						<View style={styles.storeIconWrapper}>
-							<Image source={{ uri: store.logo }} style={styles.storeIcon} />
 						</View>
-						<Text style={styles.storeName}>{store.name}</Text>
+					)}
+
+					{/* Recommended Products */}
+					<View style={styles.sectionHeader}>
+						{activeFilter === "All" && (
+							<Text style={styles.sectionTitle}>Recommended for you</Text>
+						)}
+						<TouchableOpacity>
+							<Text style={styles.seeAllText}>Show all</Text>
+						</TouchableOpacity>
 					</View>
-				))}
-			</ScrollView>
 
-			{/* Recommended Products */}
-			<View style={styles.sectionHeader}>
-				<Text style={styles.sectionTitle}>Recommended for you</Text>
-				<TouchableOpacity>
-					<Text style={styles.seeAllText}>Show all</Text>
-				</TouchableOpacity>
-			</View>
+					<View style={styles.catalogsGrid}>
+						{filteredProducts.map((item: any) => (
+							<TouchableOpacity key={item.id} style={styles.productCard}>
+								<TouchableOpacity style={styles.favoriteBtn}>
+									<Ionicons
+										name="heart-outline"
+										size={18}
+										color={COLORS.text}
+									/>
+								</TouchableOpacity>
+								<Image
+									source={{ uri: item.image }}
+									style={styles.productImage}
+								/>
 
-			<View style={styles.catalogsGrid}>
-				{PRODUCTS.map((item: any) => (
-					<TouchableOpacity key={item.id} style={styles.productCard}>
-						<TouchableOpacity style={styles.favoriteBtn}>
-							<Ionicons name="heart-outline" size={18} color={COLORS.text} />
-						</TouchableOpacity>
-						<Image source={{ uri: item.image }} style={styles.productImage} />
+								<View style={styles.productInfo}>
+									<Text style={styles.productName}>{item.name}</Text>
+									<View style={styles.ratingContainer}>
+										<Ionicons name="star" size={12} color={COLORS.rating} />
+										<Text style={styles.ratingText}>{item.rating}</Text>
+										<Text style={styles.reviewCount}>({item.reviews})</Text>
+									</View>
+									<View style={styles.priceContainer}>
+										<Text style={styles.price}>{item.price}</Text>
+										<Text style={styles.originalPrice}>
+											{item.originalPrice}
+										</Text>
+									</View>
 
-						<View style={styles.productInfo}>
-							<Text style={styles.productName}>{item.name}</Text>
-							<View style={styles.ratingContainer}>
-								<Ionicons name="star" size={12} color={COLORS.rating} />
-								<Text style={styles.ratingText}>{item.rating}</Text>
-								<Text style={styles.reviewCount}>({item.reviews})</Text>
-							</View>
-							<View style={styles.priceContainer}>
-								<Text style={styles.price}>{item.price}</Text>
-								<Text style={styles.originalPrice}>{item.originalPrice}</Text>
-							</View>
-
-							<TouchableOpacity style={styles.addButton}>
-								<Text style={styles.addButtonText}>Add to Cart</Text>
+									<TouchableOpacity style={styles.addButton}>
+										<Text style={styles.addButtonText}>Add to Cart</Text>
+									</TouchableOpacity>
+								</View>
 							</TouchableOpacity>
-						</View>
-					</TouchableOpacity>
-				))}
-			</View>
+						))}
+					</View>
+				</View>
+			)}
 
 			{/* Location Selection Modal */}
 			<Modal
@@ -739,6 +975,113 @@ export default function HomeScreen() {
 										</Text>
 									</View>
 								)}
+						</ScrollView>
+					</View>
+				</Pressable>
+			</Modal>
+
+			{/* Sidebar Modal */}
+			<Modal
+				animationType="fade"
+				transparent={true}
+				visible={isSidebarVisible}
+				onRequestClose={() => setIsSidebarVisible(false)}
+			>
+				<Pressable
+					style={styles.drawerOverlay}
+					onPress={() => setIsSidebarVisible(false)}
+				>
+					<View style={styles.drawerContent}>
+						<View style={styles.drawerHeader}>
+							<Image
+								source={{ uri: "https://i.pravatar.cc/150?u=arif" }}
+								style={styles.drawerAvatar}
+							/>
+							<View>
+								<Text style={styles.drawerName}>Arif DEV</Text>
+								<Text style={styles.drawerEmail}>arif@developer.me</Text>
+							</View>
+						</View>
+
+						<ScrollView
+							style={styles.drawerScroll}
+							showsVerticalScrollIndicator={false}
+						>
+							{SIDEBAR_MENU.map((item, index) => (
+								<TouchableOpacity key={index} style={styles.drawerItem}>
+									<MaterialCommunityIcons
+										name={item.icon as any}
+										size={22}
+										color={COLORS.textSecondary}
+									/>
+									<Text style={styles.drawerItemLabel}>{item.label}</Text>
+								</TouchableOpacity>
+							))}
+						</ScrollView>
+
+						<TouchableOpacity style={styles.logoutBtn}>
+							<MaterialCommunityIcons name="logout" size={22} color="#FF3B30" />
+							<Text style={styles.logoutText}>Logout</Text>
+						</TouchableOpacity>
+					</View>
+				</Pressable>
+			</Modal>
+
+			{/* Notifications Modal */}
+			<Modal
+				animationType="slide"
+				transparent={true}
+				visible={isNotificationsVisible}
+				onRequestClose={() => setIsNotificationsVisible(false)}
+			>
+				<Pressable
+					style={styles.modalOverlay}
+					onPress={() => setIsNotificationsVisible(false)}
+				>
+					<View style={styles.modalContent}>
+						<View style={styles.modalHandle} />
+						<Text style={styles.modalTitle}>Notifications</Text>
+
+						<ScrollView
+							style={styles.notificationList}
+							showsVerticalScrollIndicator={false}
+						>
+							{NOTIFICATIONS.map((item) => (
+								<TouchableOpacity key={item.id} style={styles.notificationItem}>
+									<View
+										style={[
+											styles.notifyIconBg,
+											{
+												backgroundColor:
+													item.type === "sale"
+														? COLORS.flashSaleBg
+														: COLORS.surface,
+											},
+										]}
+									>
+										<MaterialCommunityIcons
+											name={
+												(item.type === "sale"
+													? "lightning-bolt"
+													: item.type === "status"
+													? "package-variant-closed"
+													: "sparkles") as any
+											}
+											size={20}
+											color={
+												item.type === "sale" ? COLORS.primaryDark : COLORS.text
+											}
+										/>
+									</View>
+									<View style={{ flex: 1 }}>
+										<View style={styles.notifyRow}>
+											<Text style={styles.notifyTitle}>{item.title}</Text>
+											<Text style={styles.notifyTime}>{item.time}</Text>
+										</View>
+										<Text style={styles.notifyMsg}>{item.message}</Text>
+									</View>
+								</TouchableOpacity>
+							))}
 						</ScrollView>
 					</View>
 				</Pressable>
@@ -1202,5 +1545,104 @@ const styles = StyleSheet.create({
 	noResultsText: {
 		color: COLORS.textMuted,
 		fontSize: 14,
+	},
+	drawerOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.5)",
+	},
+	drawerContent: {
+		width: "80%",
+		height: "100%",
+		backgroundColor: COLORS.background,
+		paddingTop: 60,
+		borderTopRightRadius: 30,
+		borderBottomRightRadius: 30,
+	},
+	drawerHeader: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingHorizontal: 20,
+		gap: 15,
+		marginBottom: 30,
+	},
+	drawerAvatar: {
+		width: 60,
+		height: 60,
+		borderRadius: 30,
+		backgroundColor: COLORS.surface,
+	},
+	drawerName: {
+		fontSize: 18,
+		fontWeight: "bold",
+		color: COLORS.text,
+	},
+	drawerEmail: {
+		fontSize: 14,
+		color: COLORS.textSecondary,
+	},
+	drawerScroll: {
+		flex: 1,
+	},
+	drawerItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: 15,
+		paddingHorizontal: 20,
+		gap: 15,
+	},
+	drawerItemLabel: {
+		fontSize: 16,
+		color: COLORS.text,
+		fontWeight: "500",
+	},
+	logoutBtn: {
+		flexDirection: "row",
+		alignItems: "center",
+		padding: 30,
+		gap: 15,
+		borderTopWidth: 1,
+		borderTopColor: COLORS.surface,
+	},
+	logoutText: {
+		fontSize: 16,
+		fontWeight: "bold",
+		color: "#FF3B30",
+	},
+	notificationList: {
+		marginBottom: 20,
+	},
+	notificationItem: {
+		flexDirection: "row",
+		paddingVertical: 15,
+		gap: 15,
+		borderBottomWidth: 1,
+		borderBottomColor: COLORS.surface,
+	},
+	notifyIconBg: {
+		width: 44,
+		height: 44,
+		borderRadius: 22,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	notifyRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: 4,
+	},
+	notifyTitle: {
+		fontSize: 15,
+		fontWeight: "bold",
+		color: COLORS.text,
+	},
+	notifyTime: {
+		fontSize: 11,
+		color: COLORS.textMuted,
+	},
+	notifyMsg: {
+		fontSize: 13,
+		color: COLORS.textSecondary,
+		lineHeight: 18,
 	},
 });
