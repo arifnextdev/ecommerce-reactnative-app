@@ -2,11 +2,14 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
 
 import {
+	ActivityIndicator,
 	Dimensions,
 	FlatList,
 	Image,
+	Modal,
 	NativeScrollEvent,
 	NativeSyntheticEvent,
+	Pressable,
 	ScrollView,
 	StyleSheet,
 	Text,
@@ -200,7 +203,36 @@ const PRODUCTS = [
 export default function HomeScreen() {
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [activeFilter, setActiveFilter] = useState("All");
+	const [location, setLocation] = useState("Paris, France");
+	const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+	const [isDetecting, setIsDetecting] = useState(false);
+	const [locationSearchQuery, setLocationSearchQuery] = useState("");
 	const flatListRef = useRef<FlatList>(null);
+
+	const POPULAR_CITIES = [
+		"London, UK",
+		"New York, USA",
+		"Tokyo, Japan",
+		"Paris, France",
+		"Dubai, UAE",
+		"Singapore",
+		"Berlin, Germany",
+	];
+
+	const handleDetectLocation = () => {
+		setIsDetecting(true);
+		// Simulate GPS detection
+		setTimeout(() => {
+			setLocation("Dhaka, Bangladesh");
+			setIsDetecting(false);
+			setIsLocationModalVisible(false);
+			setLocationSearchQuery("");
+		}, 1500);
+	};
+
+	const filteredCities = POPULAR_CITIES.filter((city) =>
+		city.toLowerCase().includes(locationSearchQuery.toLowerCase())
+	);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -227,9 +259,12 @@ export default function HomeScreen() {
 					<MaterialCommunityIcons name="menu-open" size={24} color="#000" />
 				</TouchableOpacity>
 
-				<TouchableOpacity style={styles.locationContainer}>
+				<TouchableOpacity
+					style={styles.locationContainer}
+					onPress={() => setIsLocationModalVisible(true)}
+				>
 					<Ionicons name="location" size={16} color={COLORS.primaryDark} />
-					<Text style={styles.locationText}>Paris, France</Text>
+					<Text style={styles.locationText}>{location}</Text>
 					<Ionicons
 						name="chevron-down"
 						size={12}
@@ -509,6 +544,119 @@ export default function HomeScreen() {
 					</TouchableOpacity>
 				))}
 			</View>
+
+			{/* Location Selection Modal */}
+			<Modal
+				animationType="slide"
+				transparent={true}
+				visible={isLocationModalVisible}
+				onRequestClose={() => setIsLocationModalVisible(false)}
+			>
+				<Pressable
+					style={styles.modalOverlay}
+					onPress={() => setIsLocationModalVisible(false)}
+				>
+					<View style={styles.modalContent}>
+						<View style={styles.modalHandle} />
+						<Text style={styles.modalTitle}>Select Location</Text>
+
+						{/* Modal Search Bar */}
+						<View style={styles.modalSearchContainer}>
+							<Ionicons
+								name="search-outline"
+								size={20}
+								color={COLORS.textSecondary}
+							/>
+							<TextInput
+								style={styles.modalSearchInput}
+								placeholder="Search city or country..."
+								placeholderTextColor={COLORS.textMuted}
+								value={locationSearchQuery}
+								onChangeText={setLocationSearchQuery}
+							/>
+							{locationSearchQuery.length > 0 && (
+								<TouchableOpacity onPress={() => setLocationSearchQuery("")}>
+									<Ionicons
+										name="close-circle"
+										size={18}
+										color={COLORS.textMuted}
+									/>
+								</TouchableOpacity>
+							)}
+						</View>
+
+						<TouchableOpacity
+							style={styles.detectLocationBtn}
+							onPress={handleDetectLocation}
+							disabled={isDetecting}
+						>
+							{isDetecting ? (
+								<ActivityIndicator color={COLORS.secondary} />
+							) : (
+								<>
+									<Ionicons
+										name="navigate"
+										size={20}
+										color={COLORS.secondary}
+									/>
+									<Text style={styles.detectLocationText}>
+										Use Current Location
+									</Text>
+								</>
+							)}
+						</TouchableOpacity>
+
+						<View style={styles.separator}>
+							<View style={styles.line} />
+							<Text style={styles.separatorText}>Or select city</Text>
+							<View style={styles.line} />
+						</View>
+
+						<ScrollView
+							style={styles.citiesList}
+							showsVerticalScrollIndicator={false}
+						>
+							{filteredCities.map((city) => (
+								<TouchableOpacity
+									key={city}
+									style={styles.cityItem}
+									onPress={() => {
+										setLocation(city);
+										setIsLocationModalVisible(false);
+										setLocationSearchQuery("");
+									}}
+								>
+									<Ionicons
+										name="location-outline"
+										size={20}
+										color={COLORS.textSecondary}
+									/>
+									<Text
+										style={[
+											styles.cityText,
+											location === city && styles.cityTextActive,
+										]}
+									>
+										{city}
+									</Text>
+									{location === city && (
+										<Ionicons
+											name="checkmark-circle"
+											size={20}
+											color={COLORS.primaryDark}
+										/>
+									)}
+								</TouchableOpacity>
+							))}
+							{filteredCities.length === 0 && (
+								<View style={styles.noResultsContainer}>
+									<Text style={styles.noResultsText}>No cities found</Text>
+								</View>
+							)}
+						</ScrollView>
+					</View>
+				</Pressable>
+			</Modal>
 		</ScrollView>
 	);
 }
@@ -855,5 +1003,107 @@ const styles = StyleSheet.create({
 		color: COLORS.secondary,
 		fontSize: 12,
 		fontWeight: "600",
+	},
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.5)",
+		justifyContent: "flex-end",
+	},
+	modalContent: {
+		backgroundColor: COLORS.background,
+		borderTopLeftRadius: 30,
+		borderTopRightRadius: 30,
+		padding: 20,
+		maxHeight: "90%",
+	},
+	modalHandle: {
+		width: 40,
+		height: 5,
+		backgroundColor: COLORS.surface,
+		borderRadius: 3,
+		alignSelf: "center",
+		marginBottom: 20,
+	},
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
+		color: COLORS.text,
+		marginBottom: 20,
+		textAlign: "center",
+	},
+	modalSearchContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: COLORS.surface,
+		borderRadius: 15,
+		paddingHorizontal: 15,
+		height: 50,
+		marginBottom: 20,
+		gap: 10,
+	},
+	modalSearchInput: {
+		flex: 1,
+		fontSize: 16,
+		color: COLORS.text,
+	},
+	detectLocationBtn: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: COLORS.primary,
+		padding: 15,
+		borderRadius: 15,
+		gap: 10,
+		marginBottom: 25,
+	},
+	detectLocationText: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: COLORS.secondary,
+	},
+	separator: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 20,
+		gap: 15,
+	},
+	line: {
+		flex: 1,
+		height: 1,
+		backgroundColor: COLORS.surface,
+	},
+	separatorText: {
+		color: COLORS.textMuted,
+		fontSize: 12,
+		fontWeight: "600",
+		textTransform: "uppercase",
+	},
+	citiesList: {
+		marginBottom: 20,
+	},
+	cityItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: 15,
+		borderBottomWidth: 1,
+		borderBottomColor: COLORS.surface,
+		gap: 12,
+	},
+	cityText: {
+		flex: 1,
+		fontSize: 16,
+		color: COLORS.text,
+	},
+	cityTextActive: {
+		fontWeight: "bold",
+		color: COLORS.primaryDark,
+	},
+	noResultsContainer: {
+		paddingVertical: 30,
+		alignItems: "center",
+	},
+	noResultsText: {
+		color: COLORS.textMuted,
+		fontSize: 14,
 	},
 });
