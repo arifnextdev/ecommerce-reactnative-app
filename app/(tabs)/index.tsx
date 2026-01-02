@@ -17,6 +17,22 @@ import {
 
 const { width } = Dimensions.get("window");
 
+const COLORS = {
+	primary: "#D1FF8D",
+	primaryDark: "#B4E66C",
+	secondary: "#000000",
+	background: "#FFFFFF",
+	surface: "#F5F5F7",
+	text: "#000000",
+	textSecondary: "#666666",
+	textMuted: "#999999",
+	accent: "#FF5A5F",
+	white: "#FFFFFF",
+	border: "#F5F5F7",
+	rating: "#FFD700",
+	flashSaleBg: "#FBFFF4",
+};
+
 const STORES = [
 	{
 		id: "1",
@@ -77,7 +93,7 @@ const PROMOS = [
 		subtitle: "For Jan 2025",
 		discount: "50",
 		image: require("../../assets/images/promo_sneaker.png"),
-		backgroundColor: "#D1FF8D",
+		backgroundColor: COLORS.primary,
 	},
 	{
 		id: "2",
@@ -121,31 +137,69 @@ const PROMOS = [
 	},
 ];
 
-const CATALOGS = [
+const FILTERS = ["All", "Running", "Sneakers", "Formal", "Casual", "Hiking"];
+
+const FLASH_SALE = [
+	{
+		id: "1",
+		name: "Nike Air Zoom",
+		price: "$89",
+		originalPrice: "$120",
+		image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
+		discount: "-25%",
+	},
+	{
+		id: "2",
+		name: "Puma RS-X",
+		price: "$65",
+		originalPrice: "$90",
+		image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400",
+		discount: "-30%",
+	},
+];
+
+const PRODUCTS = [
 	{
 		id: "2",
 		image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400",
 		name: "Adidas Runner",
+		price: "$120.00",
+		originalPrice: "$160.00",
+		rating: 4.8,
+		reviews: 124,
 	},
 	{
 		id: "3",
 		image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400",
 		name: "Classic Sneakers",
+		price: "$85.00",
+		originalPrice: "$100.00",
+		rating: 4.5,
+		reviews: 89,
 	},
 	{
 		id: "4",
 		image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400",
 		name: "Urban Street",
+		price: "$95.00",
+		originalPrice: "$110.00",
+		rating: 4.6,
+		reviews: 56,
 	},
 	{
 		id: "5",
 		image: "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=400",
 		name: "Sport Pro",
+		price: "$140.00",
+		originalPrice: "$180.00",
+		rating: 4.9,
+		reviews: 210,
 	},
 ];
 
 export default function HomeScreen() {
 	const [activeIndex, setActiveIndex] = useState(0);
+	const [activeFilter, setActiveFilter] = useState("All");
 	const flatListRef = useRef<FlatList>(null);
 
 	useEffect(() => {
@@ -162,37 +216,85 @@ export default function HomeScreen() {
 	}, [activeIndex]);
 
 	return (
-		<ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+		<ScrollView
+			style={styles.container}
+			contentContainerStyle={styles.scrollContent}
+			showsVerticalScrollIndicator={false}
+		>
 			{/* Header */}
 			<View style={styles.header}>
 				<TouchableOpacity style={styles.menuIcon}>
-					<MaterialCommunityIcons name="menu" size={24} color="#000" />
+					<MaterialCommunityIcons name="menu-open" size={24} color="#000" />
 				</TouchableOpacity>
 
 				<TouchableOpacity style={styles.locationContainer}>
-					<Ionicons name="location-outline" size={16} color="#000" />
-					<Text style={styles.locationText}>Paris</Text>
+					<Ionicons name="location" size={16} color={COLORS.primaryDark} />
+					<Text style={styles.locationText}>Paris, France</Text>
+					<Ionicons
+						name="chevron-down"
+						size={12}
+						color={COLORS.textSecondary}
+					/>
 				</TouchableOpacity>
 
-				<TouchableOpacity style={styles.filterIcon}>
-					<Ionicons name="options-outline" size={24} color="#000" />
+				<TouchableOpacity style={styles.notificationBtn}>
+					<Ionicons
+						name="notifications-outline"
+						size={24}
+						color={COLORS.text}
+					/>
+					<View style={styles.badge} />
 				</TouchableOpacity>
 			</View>
 
 			{/* Search Bar */}
 			<View style={styles.searchContainer}>
 				<Ionicons
-					name="search"
+					name="search-outline"
 					size={20}
 					color="#666"
 					style={styles.searchIcon}
 				/>
 				<TextInput
-					placeholder="Search..."
+					placeholder="Search details..."
 					style={styles.searchInput}
 					placeholderTextColor="#666"
 				/>
+				<TouchableOpacity>
+					<Ionicons
+						name="filter-outline"
+						size={20}
+						color={COLORS.textSecondary}
+					/>
+				</TouchableOpacity>
 			</View>
+
+			{/* Filter Chips */}
+			<ScrollView
+				horizontal
+				showsHorizontalScrollIndicator={false}
+				style={styles.filtersContainer}
+			>
+				{FILTERS.map((filter, index) => (
+					<TouchableOpacity
+						key={index}
+						style={[
+							styles.filterChip,
+							activeFilter === filter && styles.filterChipActive,
+						]}
+						onPress={() => setActiveFilter(filter)}
+					>
+						<Text
+							style={[
+								styles.filterText,
+								activeFilter === filter && styles.filterTextActive,
+							]}
+						>
+							{filter}
+						</Text>
+					</TouchableOpacity>
+				))}
+			</ScrollView>
 
 			{/* Promo Banner */}
 			<View style={styles.promoContainer}>
@@ -222,7 +324,7 @@ export default function HomeScreen() {
 									<Text style={{ fontSize: 16 }}>% OFF</Text>
 								</Text>
 								<TouchableOpacity style={styles.discoverButton}>
-									<Text style={styles.discoverButtonText}>I discover</Text>
+									<Text style={styles.discoverButtonText}>Shop Now</Text>
 								</TouchableOpacity>
 							</View>
 							<Image
@@ -244,6 +346,109 @@ export default function HomeScreen() {
 						/>
 					))}
 				</View>
+			</View>
+
+			{/* Flash Sale Section */}
+			<View style={styles.flashSaleContainer}>
+				<View style={styles.flashSaleHeader}>
+					<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+						<Ionicons name="flash" size={20} color={COLORS.secondary} />
+						<Text style={styles.flashSaleTitle}>Flash Sale</Text>
+					</View>
+					<View style={styles.countDownContainer}>
+						<View style={styles.timerBox}>
+							<Text style={styles.timerText}>02</Text>
+						</View>
+						<Text style={{ fontWeight: "bold", color: COLORS.secondary }}>
+							:
+						</Text>
+						<View style={styles.timerBox}>
+							<Text style={styles.timerText}>12</Text>
+						</View>
+						<Text style={{ fontWeight: "bold", color: COLORS.secondary }}>
+							:
+						</Text>
+						<View style={styles.timerBox}>
+							<Text style={styles.timerText}>45</Text>
+						</View>
+					</View>
+				</View>
+
+				<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+					{FLASH_SALE.map((item) => (
+						<TouchableOpacity
+							key={item.id}
+							style={{
+								marginRight: 15,
+								width: 140,
+								backgroundColor: COLORS.white,
+								borderRadius: 15,
+								padding: 10,
+							}}
+						>
+							<View>
+								<Image
+									source={{ uri: item.image }}
+									style={{
+										width: "100%",
+										height: 100,
+										borderRadius: 10,
+										marginBottom: 8,
+										backgroundColor: COLORS.surface,
+									}}
+									resizeMode="contain"
+								/>
+								<View
+									style={{
+										position: "absolute",
+										top: 5,
+										left: 5,
+										backgroundColor: COLORS.primary,
+										paddingHorizontal: 6,
+										paddingVertical: 2,
+										borderRadius: 4,
+									}}
+								>
+									<Text
+										style={{
+											color: COLORS.secondary,
+											fontSize: 10,
+											fontWeight: "bold",
+										}}
+									>
+										{item.discount}
+									</Text>
+								</View>
+							</View>
+							<Text
+								numberOfLines={1}
+								style={{
+									fontWeight: "600",
+									marginBottom: 4,
+									color: COLORS.text,
+								}}
+							>
+								{item.name}
+							</Text>
+							<View
+								style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+							>
+								<Text style={{ fontWeight: "bold", color: COLORS.text }}>
+									{item.price}
+								</Text>
+								<Text
+									style={{
+										fontSize: 10,
+										color: COLORS.textMuted,
+										textDecorationLine: "line-through",
+									}}
+								>
+									{item.originalPrice}
+								</Text>
+							</View>
+						</TouchableOpacity>
+					))}
+				</ScrollView>
 			</View>
 
 			{/* Favorite Stores */}
@@ -269,23 +474,41 @@ export default function HomeScreen() {
 				))}
 			</ScrollView>
 
-			{/* New Catalogs */}
+			{/* Recommended Products */}
 			<View style={styles.sectionHeader}>
-				<Text style={styles.sectionTitle}>New catalogs for you</Text>
+				<Text style={styles.sectionTitle}>Recommended for you</Text>
 				<TouchableOpacity>
-					<Text style={styles.seeAllText}>See all</Text>
+					<Text style={styles.seeAllText}>Show all</Text>
 				</TouchableOpacity>
 			</View>
 
 			<View style={styles.catalogsGrid}>
-				{CATALOGS.map((item: any) => (
-					<View key={item.id} style={styles.catalogCard}>
-						<Image source={{ uri: item.image }} style={styles.catalogImage} />
-					</View>
+				{PRODUCTS.map((item: any) => (
+					<TouchableOpacity key={item.id} style={styles.productCard}>
+						<TouchableOpacity style={styles.favoriteBtn}>
+							<Ionicons name="heart-outline" size={18} color={COLORS.text} />
+						</TouchableOpacity>
+						<Image source={{ uri: item.image }} style={styles.productImage} />
+
+						<View style={styles.productInfo}>
+							<Text style={styles.productName}>{item.name}</Text>
+							<View style={styles.ratingContainer}>
+								<Ionicons name="star" size={12} color={COLORS.rating} />
+								<Text style={styles.ratingText}>{item.rating}</Text>
+								<Text style={styles.reviewCount}>({item.reviews})</Text>
+							</View>
+							<View style={styles.priceContainer}>
+								<Text style={styles.price}>{item.price}</Text>
+								<Text style={styles.originalPrice}>{item.originalPrice}</Text>
+							</View>
+
+							<TouchableOpacity style={styles.addButton}>
+								<Text style={styles.addButtonText}>Add to Cart</Text>
+							</TouchableOpacity>
+						</View>
+					</TouchableOpacity>
 				))}
 			</View>
-
-			<View style={{ height: 100 }} />
 		</ScrollView>
 	);
 }
@@ -293,8 +516,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#FFFFFF",
+		backgroundColor: COLORS.background,
 		paddingTop: 60,
+	},
+	scrollContent: {
+		paddingBottom: 160, // Enough space to clear the floating tab bar (bottom: 30 + height: 75 + margin)
 	},
 	header: {
 		flexDirection: "row",
@@ -306,7 +532,7 @@ const styles = StyleSheet.create({
 	menuIcon: {
 		width: 40,
 		height: 40,
-		backgroundColor: "#F5F5F7",
+		backgroundColor: COLORS.surface,
 		borderRadius: 12,
 		justifyContent: "center",
 		alignItems: "center",
@@ -314,29 +540,47 @@ const styles = StyleSheet.create({
 	locationContainer: {
 		flexDirection: "row",
 		alignItems: "center",
+		backgroundColor: COLORS.surface,
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+		borderRadius: 20,
 	},
 	locationText: {
 		fontSize: 14,
 		fontWeight: "600",
 		marginLeft: 4,
+		marginRight: 4,
+		color: COLORS.text,
 	},
-	filterIcon: {
+	notificationBtn: {
 		width: 40,
 		height: 40,
-		backgroundColor: "#F5F5F7",
+		backgroundColor: COLORS.surface,
 		borderRadius: 12,
 		justifyContent: "center",
 		alignItems: "center",
+		position: "relative",
+	},
+	badge: {
+		position: "absolute",
+		top: 8,
+		right: 8,
+		width: 8,
+		height: 8,
+		borderRadius: 4,
+		backgroundColor: COLORS.primaryDark,
+		borderWidth: 1.5,
+		borderColor: COLORS.surface,
 	},
 	searchContainer: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "#F5F5F7",
+		backgroundColor: COLORS.surface,
 		marginHorizontal: 20,
 		borderRadius: 15,
 		paddingHorizontal: 15,
 		height: 50,
-		marginBottom: 20,
+		marginBottom: 15,
 	},
 	searchIcon: {
 		marginRight: 10,
@@ -344,14 +588,36 @@ const styles = StyleSheet.create({
 	searchInput: {
 		flex: 1,
 		fontSize: 16,
-		color: "#000",
+		color: COLORS.text,
+	},
+	filtersContainer: {
+		paddingLeft: 20,
+		marginBottom: 25,
+	},
+	filterChip: {
+		paddingHorizontal: 20,
+		paddingVertical: 8,
+		backgroundColor: COLORS.surface,
+		borderRadius: 20,
+		marginRight: 10,
+	},
+	filterChipActive: {
+		backgroundColor: COLORS.primary,
+	},
+	filterText: {
+		fontSize: 14,
+		fontWeight: "600",
+		color: COLORS.textSecondary,
+	},
+	filterTextActive: {
+		color: COLORS.secondary,
 	},
 	promoContainer: {
 		marginBottom: 30,
 		position: "relative",
 	},
 	promoBanner: {
-		backgroundColor: "#D1FF8D",
+		backgroundColor: COLORS.primary,
 		marginLeft: 20,
 		marginRight: 20,
 		borderRadius: 25,
@@ -370,22 +636,22 @@ const styles = StyleSheet.create({
 	promoTitle: {
 		fontSize: 20,
 		fontWeight: "bold",
-		color: "#000",
+		color: COLORS.text,
 		marginBottom: 5,
 	},
 	promoSubtitle: {
 		fontSize: 12,
-		color: "#333",
+		color: COLORS.textSecondary,
 		marginBottom: 10,
 	},
 	promoDiscount: {
 		fontSize: 36,
 		fontWeight: "900",
-		color: "#FF5A5F",
+		color: COLORS.secondary,
 		marginBottom: 10,
 	},
 	discoverButton: {
-		backgroundColor: "#FFFFFF",
+		backgroundColor: COLORS.white,
 		paddingVertical: 8,
 		paddingHorizontal: 15,
 		borderRadius: 20,
@@ -394,7 +660,7 @@ const styles = StyleSheet.create({
 	discoverButtonText: {
 		fontSize: 12,
 		fontWeight: "600",
-		color: "#000",
+		color: COLORS.text,
 	},
 	promoImage: {
 		width: 180,
@@ -412,14 +678,14 @@ const styles = StyleSheet.create({
 		width: 20,
 		height: 6,
 		borderRadius: 3,
-		backgroundColor: "#000",
+		backgroundColor: COLORS.secondary,
 		marginHorizontal: 2,
 	},
 	dot: {
 		width: 6,
 		height: 6,
 		borderRadius: 3,
-		backgroundColor: "#AAAAAA",
+		backgroundColor: COLORS.textMuted,
 		marginHorizontal: 2,
 	},
 	sectionHeader: {
@@ -432,11 +698,27 @@ const styles = StyleSheet.create({
 	sectionTitle: {
 		fontSize: 18,
 		fontWeight: "bold",
-		color: "#000",
+		color: COLORS.text,
+	},
+	countDownContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+	},
+	timerBox: {
+		backgroundColor: COLORS.secondary,
+		paddingHorizontal: 8,
+		paddingVertical: 4,
+		borderRadius: 6,
+	},
+	timerText: {
+		color: COLORS.white,
+		fontWeight: "bold",
+		fontSize: 12,
 	},
 	seeAllText: {
 		fontSize: 12,
-		color: "#666",
+		color: COLORS.textSecondary,
 	},
 	storesList: {
 		paddingLeft: 20,
@@ -451,7 +733,7 @@ const styles = StyleSheet.create({
 		width: 60,
 		height: 60,
 		borderRadius: 30,
-		backgroundColor: "#F5F5F7",
+		backgroundColor: COLORS.surface,
 		justifyContent: "center",
 		alignItems: "center",
 		marginBottom: 8,
@@ -463,7 +745,27 @@ const styles = StyleSheet.create({
 	},
 	storeName: {
 		fontSize: 12,
-		color: "#666",
+		color: COLORS.textSecondary,
+	},
+	flashSaleContainer: {
+		marginHorizontal: 20,
+		marginBottom: 30,
+		backgroundColor: COLORS.flashSaleBg,
+		borderRadius: 20,
+		padding: 15,
+		borderWidth: 1,
+		borderColor: COLORS.primary,
+	},
+	flashSaleHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: 15,
+	},
+	flashSaleTitle: {
+		fontWeight: "bold",
+		fontSize: 16,
+		color: COLORS.text,
 	},
 	catalogsGrid: {
 		flexDirection: "row",
@@ -471,19 +773,87 @@ const styles = StyleSheet.create({
 		justifyContent: "space-between",
 		flexWrap: "wrap",
 	},
-	catalogCard: {
-		width: (width - 60) / 2,
-		height: 200,
-		backgroundColor: "#F5F5F7",
-		borderRadius: 25,
-		overflow: "hidden",
+	productCard: {
+		width: (width - 50) / 2,
+		backgroundColor: COLORS.white,
+		borderRadius: 20,
 		marginBottom: 20,
-		borderWidth: 2,
-		borderColor: "#88e04dff",
+		padding: 10,
+		shadowColor: COLORS.secondary,
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.05,
+		shadowRadius: 10,
+		elevation: 2,
+		borderWidth: 1,
+		borderColor: COLORS.surface,
 	},
-	catalogImage: {
+	favoriteBtn: {
+		position: "absolute",
+		top: 10,
+		right: 10,
+		zIndex: 10,
+		backgroundColor: "rgba(255,255,255,0.8)",
+		borderRadius: 15,
+		width: 30,
+		height: 30,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	productImage: {
 		width: "100%",
-		height: "100%",
-		resizeMode: "cover",
+		height: 140,
+		borderRadius: 15,
+		marginBottom: 10,
+		backgroundColor: COLORS.surface,
+	},
+	productInfo: {
+		gap: 4,
+	},
+	productName: {
+		fontSize: 14,
+		fontWeight: "600",
+		color: COLORS.text,
+	},
+	ratingContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+	},
+	ratingText: {
+		fontSize: 12,
+		fontWeight: "600",
+		color: COLORS.text,
+	},
+	reviewCount: {
+		fontSize: 12,
+		color: COLORS.textSecondary,
+	},
+	priceContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+		marginTop: 4,
+	},
+	price: {
+		fontSize: 16,
+		fontWeight: "bold",
+		color: COLORS.text,
+	},
+	originalPrice: {
+		fontSize: 12,
+		color: COLORS.textMuted,
+		textDecorationLine: "line-through",
+	},
+	addButton: {
+		backgroundColor: COLORS.primary,
+		borderRadius: 12,
+		paddingVertical: 8,
+		alignItems: "center",
+		marginTop: 10,
+	},
+	addButtonText: {
+		color: COLORS.secondary,
+		fontSize: 12,
+		fontWeight: "600",
 	},
 });
